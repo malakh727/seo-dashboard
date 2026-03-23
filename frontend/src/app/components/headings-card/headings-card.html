@@ -1,0 +1,17 @@
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-sm font-semibold text-slate-700">{{ title() }}</h2>
+    <span class="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded-full">
+      {{ headings().length }}
+    </span>
+  </div>
+  @if (headings().length) {
+    <ul class="space-y-1.5 max-h-60 overflow-y-auto">
+      @for (h of headings(); track $index) {
+        <li class="text-sm text-slate-600 bg-slate-50 rounded-lg px-3 py-2">{{ h }}</li>
+      }
+    </ul>
+  } @else {
+    <p class="text-slate-400 text-sm italic">No {{ title() | lowercase }} found</p>
+  }
+</div>
