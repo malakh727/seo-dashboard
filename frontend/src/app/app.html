@@ -84,13 +84,40 @@
     }
 
     @if (result(); as r) {
+      <div class="flex items-center justify-between">
+        <p class="text-xs text-slate-400 truncate max-w-xs">{{ lastUrl() }}</p>
+        <div class="flex gap-2 shrink-0">
+          <button
+            (click)="copyResults()"
+            class="flex items-center gap-1.5 text-xs font-medium text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            Copy
+          </button>
+          <button
+            (click)="downloadJson()"
+            class="flex items-center gap-1.5 text-xs font-medium text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            JSON
+          </button>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <app-score-card [score]="r.score" />
+        <app-score-card [score]="r.score" [previousScore]="previousScore()" />
         <app-meta-card label="Page Title" [value]="r.title" />
         <app-meta-card label="Meta Description" [value]="r.metaDescription" />
       </div>
 
-      <app-seo-checklist [items]="r.scoreBreakdown" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <app-seo-checklist [items]="r.scoreBreakdown" />
+        <app-og-card [result]="r" />
+      </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <app-headings-card title="H1 Headings" [headings]="r.h1" />

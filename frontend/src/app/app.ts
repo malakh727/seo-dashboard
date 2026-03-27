@@ -9,10 +9,11 @@ import { MetaCard } from './components/meta-card/meta-card';
 import { SeoChecklist } from './components/seo-checklist/seo-checklist';
 import { HeadingsCard } from './components/headings-card/headings-card';
 import { LoadingSkeleton } from './components/loading-skeleton/loading-skeleton';
+import { OgCard } from './components/og-card/og-card';
 
 @Component({
   selector: 'app-root',
-  imports: [UrlInput, ScoreCard, MetaCard, SeoChecklist, HeadingsCard, LoadingSkeleton, DatePipe],
+  imports: [UrlInput, ScoreCard, MetaCard, SeoChecklist, HeadingsCard, LoadingSkeleton, OgCard, DatePipe],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -25,9 +26,11 @@ export class App {
   result = signal<SeoResult | null>(null);
   lastUrl = signal('');
   historyOpen = signal(false);
+  previousScore = signal<number | null>(null);
 
   onAnalyze(url: string) {
     this.lastUrl.set(url);
+    this.previousScore.set(this.historyService.getPreviousScore(url));
     this.loading.set(true);
     this.error.set('');
     this.result.set(null);
@@ -53,9 +56,44 @@ export class App {
     });
   }
 
+  copyResults(): void {
+    const r = this.result();
+    if (!r) return;
+    const text = [
+      `SEO Analysis — ${this.lastUrl()}`,
+      `Score: ${r.score}/100`,
+      ``,
+      `Title: ${r.title || 'Missing'}`,
+      `Meta Description: ${r.metaDescription || 'Missing'}`,
+      `Canonical URL: ${r.canonicalUrl || 'Missing'}`,
+      `OG Title: ${r.ogTitle || 'Missing'}`,
+      `OG Description: ${r.ogDescription || 'Missing'}`,
+      `OG Image: ${r.ogImage ? 'Present' : 'Missing'}`,
+      `H1 Tags: ${r.h1.length} (${r.h1.join(', ') || 'None'})`,
+      `H2 Tags: ${r.h2.length}`,
+      `Images: ${r.imageCount} total, ${r.imagesWithoutAlt} missing alt`,
+      `Word Count: ${r.wordCount}`,
+    ].join('\n');
+    navigator.clipboard.writeText(text);
+  }
+
+  downloadJson(): void {
+    const r = this.result();
+    if (!r) return;
+    const blob = new Blob([JSON.stringify({ url: this.lastUrl(), ...r }, null, 2)], {
+      type: 'application/json',
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `seo-analysis.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   loadFromHistory(entry: import('./services/history.service').HistoryEntry): void {
     this.result.set(entry.result);
     this.lastUrl.set(entry.url);
+    this.previousScore.set(null);
     this.error.set('');
     this.historyOpen.set(false);
   }

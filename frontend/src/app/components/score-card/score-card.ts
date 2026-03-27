@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 
 @Component({
   selector: 'app-score-card',
@@ -6,6 +6,12 @@ import { Component, input } from '@angular/core';
 })
 export class ScoreCard {
   score = input.required<number>();
+  previousScore = input<number | null>(null);
+
+  delta = computed(() => {
+    const prev = this.previousScore();
+    return prev !== null ? this.score() - prev : null;
+  });
 
   colorClass(): string {
     const s = this.score();

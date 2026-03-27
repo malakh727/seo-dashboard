@@ -8,4 +8,14 @@
     {{ label() }}
   </div>
   <div class="text-slate-400 text-xs mt-2">SEO Score</div>
+
+  @if (delta() !== null) {
+    <div
+      class="mt-2 text-xs font-semibold tabular-nums"
+      [class]="delta()! > 0 ? 'text-emerald-600' : delta()! < 0 ? 'text-red-500' : 'text-slate-400'"
+    >
+      {{ delta()! > 0 ? '▲' : delta()! < 0 ? '▼' : '=' }}
+      {{ delta()! > 0 ? '+' : '' }}{{ delta() }} vs last run
+    </div>
+  }
 </div>

@@ -21,6 +21,11 @@ export class HistoryService {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }
 
+  getPreviousScore(url: string): number | null {
+    const match = this.entries().find((e) => e.url === url);
+    return match ? match.result.score : null;
+  }
+
   clear(): void {
     this.entries.set([]);
     localStorage.removeItem(STORAGE_KEY);

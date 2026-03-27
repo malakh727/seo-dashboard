@@ -12,4 +12,11 @@ export interface SeoResult {
   h2: string[];
   score: number;
   scoreBreakdown: ScoreItem[];
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: string;
+  canonicalUrl: string;
+  imageCount: number;
+  imagesWithoutAlt: number;
+  wordCount: number;
 }
