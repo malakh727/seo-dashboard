@@ -1,9 +1,20 @@
 const { fetchSEOData } = require('../services/seoService');
 
+const PRIVATE_IP_RE = /^(localhost|127\.|0\.0\.0\.0|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/i;
+
 const isValidUrl = (string) => {
   try {
     const url = new URL(string);
     return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const isPrivateHost = (string) => {
+  try {
+    const { hostname } = new URL(string);
+    return PRIVATE_IP_RE.test(hostname);
   } catch {
     return false;
   }
@@ -19,6 +30,10 @@ const analyzeSEO = async (req, res) => {
 
     if (!isValidUrl(url)) {
       return res.status(400).json({ error: 'Invalid URL. Please include http:// or https://' });
+    }
+
+    if (isPrivateHost(url)) {
+      return res.status(403).json({ error: 'Requests to private or internal addresses are not allowed.' });
     }
 
     const data = await fetchSEOData(url);

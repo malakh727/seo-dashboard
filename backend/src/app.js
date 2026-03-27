@@ -18,7 +18,9 @@ app.use(express.json());
 app.use('/api', apiLimiter);
 app.use('/api/seo', seoRoutes);
 
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = app;
+
+if (require.main === module) {
+  const PORT = 3000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
