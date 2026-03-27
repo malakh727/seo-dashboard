@@ -9,13 +9,78 @@
   <main class="max-w-4xl mx-auto px-6 py-8 space-y-5">
     <app-url-input [loading]="loading()" (analyze)="onAnalyze($event)" />
 
+    @if (historyService.entries().length > 0) {
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <button
+          (click)="historyOpen.set(!historyOpen())"
+          class="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+        >
+          <span class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Recent Analyses
+            <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">{{ historyService.entries().length }}</span>
+          </span>
+          <svg
+            class="w-4 h-4 text-slate-400 transition-transform"
+            [class.rotate-180]="historyOpen()"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        @if (historyOpen()) {
+          <ul class="divide-y divide-slate-100 border-t border-slate-100">
+            @for (entry of historyService.entries(); track entry.url) {
+              <li>
+                <button
+                  (click)="loadFromHistory(entry)"
+                  class="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-slate-50 transition-colors"
+                >
+                  <div class="min-w-0">
+                    <p class="text-sm text-slate-700 truncate">{{ entry.url }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">{{ entry.analyzedAt | date: 'MMM d, h:mm a' }}</p>
+                  </div>
+                  <span
+                    class="ml-4 shrink-0 text-sm font-semibold px-2 py-0.5 rounded-full"
+                    [class]="entry.result.score >= 70 ? 'bg-emerald-50 text-emerald-700' : entry.result.score >= 40 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'"
+                  >{{ entry.result.score }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+          <div class="px-5 py-2 border-t border-slate-100">
+            <button (click)="historyService.clear()" class="text-xs text-slate-400 hover:text-red-500 transition-colors">
+              Clear history
+            </button>
+          </div>
+        }
+      </div>
+    }
+
     @if (error()) {
       <div class="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
         <svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
-        <p class="text-red-700 text-sm">{{ error() }}</p>
+        <div class="flex-1">
+          <p class="text-red-700 text-sm">{{ error() }}</p>
+          @if (lastUrl()) {
+            <button
+              (click)="onAnalyze(lastUrl())"
+              class="mt-2 text-xs font-medium text-red-600 hover:text-red-800 underline"
+            >
+              Retry
+            </button>
+          }
+        </div>
       </div>
+    }
+
+    @if (loading()) {
+      <app-loading-skeleton />
     }
 
     @if (result(); as r) {

@@ -2,7 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 const fetchSEOData = async (url) => {
-  const { data } = await axios.get(url);
+  const { data } = await axios.get(url, { timeout: 10000 });
   const $ = cheerio.load(data);
 
   const title = $('title').text();

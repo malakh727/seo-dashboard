@@ -1,26 +1,33 @@
 import { Component, signal, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { Seo } from './services/seo';
+import { HistoryService } from './services/history.service';
 import { ScoreItem, SeoResult } from './models/seo.models';
 import { UrlInput } from './components/url-input/url-input';
 import { ScoreCard } from './components/score-card/score-card';
 import { MetaCard } from './components/meta-card/meta-card';
 import { SeoChecklist } from './components/seo-checklist/seo-checklist';
 import { HeadingsCard } from './components/headings-card/headings-card';
+import { LoadingSkeleton } from './components/loading-skeleton/loading-skeleton';
 
 @Component({
   selector: 'app-root',
-  imports: [UrlInput, ScoreCard, MetaCard, SeoChecklist, HeadingsCard],
+  imports: [UrlInput, ScoreCard, MetaCard, SeoChecklist, HeadingsCard, LoadingSkeleton, DatePipe],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
   private seoService = inject(Seo);
+  historyService = inject(HistoryService);
 
   loading = signal(false);
   error = signal('');
   result = signal<SeoResult | null>(null);
+  lastUrl = signal('');
+  historyOpen = signal(false);
 
   onAnalyze(url: string) {
+    this.lastUrl.set(url);
     this.loading.set(true);
     this.error.set('');
     this.result.set(null);
@@ -28,16 +35,29 @@ export class App {
     this.seoService.analyze(url).subscribe({
       next: (data: any) => {
         const { score, scoreBreakdown } = this.calculateScore(data);
-        this.result.set({ ...data, score, scoreBreakdown });
+        const fullResult = { ...data, score, scoreBreakdown };
+        this.result.set(fullResult);
+        this.historyService.save(url, fullResult);
         this.loading.set(false);
       },
       error: (err: any) => {
-        this.error.set(
-          err.error?.error || 'Failed to analyze URL. Please check the URL and try again.',
-        );
+        const msg =
+          err.status === 408
+            ? 'Request timed out. The URL took too long to respond.'
+            : err.status === 429
+              ? 'Too many requests. Please wait a moment and try again.'
+              : err.error?.error || 'Failed to analyze URL. Please check the URL and try again.';
+        this.error.set(msg);
         this.loading.set(false);
       },
     });
+  }
+
+  loadFromHistory(entry: import('./services/history.service').HistoryEntry): void {
+    this.result.set(entry.result);
+    this.lastUrl.set(entry.url);
+    this.error.set('');
+    this.historyOpen.set(false);
   }
 
   private calculateScore(data: any): { score: number; scoreBreakdown: ScoreItem[] } {

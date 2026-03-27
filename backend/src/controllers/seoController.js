@@ -27,6 +27,9 @@ const analyzeSEO = async (req, res) => {
     if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
       return res.status(400).json({ error: 'Could not reach the URL. Please check it is correct and accessible.' });
     }
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      return res.status(408).json({ error: 'Request timed out. The URL took too long to respond.' });
+    }
     res.status(500).json({ error: 'Failed to analyze URL' });
   }
 };
