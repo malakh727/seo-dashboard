@@ -107,14 +107,16 @@
 
 > Goal: Side-by-side SEO comparison of two URLs.
 
-- [ ] **Compare page component**
+- [x] **Compare page component**
   - New file: `frontend/src/app/pages/compare/compare.ts + .html`
-  - Two URL inputs side-by-side, each with their own Analyze button
-  - Results rendered in two columns using existing child components
-  - Per-row win/loss indicator (green ✓ / red ✗) for each metric
-  - Overall winner badge
+  - Two URL inputs side-by-side (indigo/purple themed), each independently analyzed
+  - Winner banner: trophy + score vs score + metric win count
+  - Per-row win ✓ / lose ✗ / tie = indicators with green highlight on winning cell
+  - 11-metric comparison table with hint text per row
+  - Headings cards for both sides at the bottom
 
-- [ ] **Reuse existing components** — score-card, meta-card, seo-checklist, headings-card take inputs; no changes needed to render them in two columns
+- [x] **Reuse existing components** — ScoreCard, HeadingsCard, LoadingSkeleton reused directly
+- [x] **Extracted** `calculateScore` to `utils/seo-score.util.ts` shared by Home + Compare
 
 ---
 

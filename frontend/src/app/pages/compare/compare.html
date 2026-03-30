@@ -1,12 +1,294 @@
-<main class="max-w-4xl mx-auto px-6 py-12 animate-fade-in">
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 flex flex-col items-center text-center gap-4">
-    <div class="bg-indigo-50 rounded-2xl p-4">
-      <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-      </svg>
-    </div>
-    <h2 class="text-xl font-bold text-slate-800">Compare Page</h2>
-    <p class="text-slate-500 text-sm max-w-sm">Side-by-side SEO comparison of two URLs with per-metric win/loss indicators — coming in Phase 5.</p>
-    <span class="bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full">Phase 5</span>
+<main class="max-w-5xl mx-auto px-6 py-8 space-y-6 animate-fade-in">
+
+  <!-- ── Page title ─────────────────────────────────────────────────── -->
+  <div>
+    <h2 class="text-lg font-bold text-slate-800">Compare Two URLs</h2>
+    <p class="text-sm text-slate-500 mt-0.5">Analyze two pages side-by-side and see which performs better across every SEO metric.</p>
   </div>
+
+  <!-- ── URL Inputs ─────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+    <!-- Site A -->
+    <div class="bg-linear-to-br from-indigo-50 to-white rounded-2xl border border-indigo-100 shadow-sm p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">A</span>
+        <span class="text-sm font-semibold text-slate-700">Site A</span>
+        @if (resultA()) {
+          <span class="ml-auto flex items-center gap-1.5 text-xs text-indigo-600 font-medium">
+            <img [src]="favicon(urlA())" alt="" class="w-3.5 h-3.5 rounded" />
+            {{ hostname(urlA()) }}
+          </span>
+        }
+      </div>
+      <div class="flex gap-2">
+        <input
+          [ngModel]="urlA()"
+          (ngModelChange)="urlA.set($event)"
+          (keydown.enter)="analyzeA()"
+          placeholder="https://site-a.com"
+          type="url"
+          class="flex-1 border border-slate-200 bg-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition shadow-sm"
+        />
+        <button
+          (click)="analyzeA()"
+          [disabled]="loadingA()"
+          class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shrink-0 flex items-center gap-1.5"
+        >
+          @if (loadingA()) {
+            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+          } @else {
+            Analyze
+          }
+        </button>
+      </div>
+      @if (errorA()) {
+        <p class="mt-2 text-xs text-red-600">{{ errorA() }}</p>
+      }
+    </div>
+
+    <!-- Site B -->
+    <div class="bg-linear-to-br from-purple-50 to-white rounded-2xl border border-purple-100 shadow-sm p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center shrink-0">B</span>
+        <span class="text-sm font-semibold text-slate-700">Site B</span>
+        @if (resultB()) {
+          <span class="ml-auto flex items-center gap-1.5 text-xs text-purple-600 font-medium">
+            <img [src]="favicon(urlB())" alt="" class="w-3.5 h-3.5 rounded" />
+            {{ hostname(urlB()) }}
+          </span>
+        }
+      </div>
+      <div class="flex gap-2">
+        <input
+          [ngModel]="urlB()"
+          (ngModelChange)="urlB.set($event)"
+          (keydown.enter)="analyzeB()"
+          placeholder="https://site-b.com"
+          type="url"
+          class="flex-1 border border-slate-200 bg-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm"
+        />
+        <button
+          (click)="analyzeB()"
+          [disabled]="loadingB()"
+          class="bg-purple-600 hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shrink-0 flex items-center gap-1.5"
+        >
+          @if (loadingB()) {
+            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+          } @else {
+            Analyze
+          }
+        </button>
+      </div>
+      @if (errorB()) {
+        <p class="mt-2 text-xs text-red-600">{{ errorB() }}</p>
+      }
+    </div>
+
+  </div>
+
+  <!-- ── One side loading skeleton ──────────────────────────────────── -->
+  @if (loadingA() || loadingB()) {
+    <app-loading-skeleton />
+  }
+
+  <!-- ── Partial state: one side done, waiting for other ────────────── -->
+  @if ((resultA() && !resultB() && !loadingB()) || (!resultA() && resultB() && !loadingA())) {
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4 shadow-sm">
+      <div class="bg-indigo-50 rounded-xl p-3 shrink-0">
+        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-slate-700">
+          {{ resultA() ? 'Site A analyzed' : 'Site B analyzed' }} — now analyze the other site to see the comparison.
+        </p>
+        <p class="text-xs text-slate-400 mt-0.5">Enter a URL in the {{ resultA() ? 'Site B' : 'Site A' }} input above and click Analyze.</p>
+      </div>
+    </div>
+  }
+
+  <!-- ── Full comparison (both analyzed) ────────────────────────────── -->
+  @if (bothAnalyzed()) {
+    <div class="space-y-6 animate-fade-in">
+
+      <!-- Winner banner -->
+      @if (winnerSide() === 'tie') {
+        <div class="bg-slate-700 text-white rounded-2xl px-6 py-4 flex items-center gap-4 shadow-md">
+          <span class="text-2xl">🤝</span>
+          <div>
+            <p class="font-bold text-base">It's a Tie!</p>
+            <p class="text-slate-300 text-sm">Both sites scored {{ resultA()!.score }}/100 — neck and neck.</p>
+          </div>
+        </div>
+      } @else if (winnerSide() === 'A') {
+        <div class="bg-linear-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl px-6 py-4 flex items-center justify-between shadow-md">
+          <div class="flex items-center gap-4">
+            <span class="text-2xl">🏆</span>
+            <div>
+              <p class="font-bold text-base">Site A Wins!</p>
+              <p class="text-indigo-200 text-sm">
+                <span class="font-semibold text-white">{{ hostname(urlA()) }}</span>
+                scored {{ resultA()!.score }} vs {{ resultB()!.score }} — winning {{ winsA() }} of {{ metrics().length }} metrics.
+              </p>
+            </div>
+          </div>
+          <div class="hidden sm:flex items-center gap-3 shrink-0">
+            <span class="text-3xl font-black text-white">{{ resultA()!.score }}</span>
+            <span class="text-indigo-300 text-lg">vs</span>
+            <span class="text-2xl font-black text-indigo-300">{{ resultB()!.score }}</span>
+          </div>
+        </div>
+      } @else {
+        <div class="bg-linear-to-r from-purple-600 to-purple-500 text-white rounded-2xl px-6 py-4 flex items-center justify-between shadow-md">
+          <div class="flex items-center gap-4">
+            <span class="text-2xl">🏆</span>
+            <div>
+              <p class="font-bold text-base">Site B Wins!</p>
+              <p class="text-purple-200 text-sm">
+                <span class="font-semibold text-white">{{ hostname(urlB()) }}</span>
+                scored {{ resultB()!.score }} vs {{ resultA()!.score }} — winning {{ winsB() }} of {{ metrics().length }} metrics.
+              </p>
+            </div>
+          </div>
+          <div class="hidden sm:flex items-center gap-3 shrink-0">
+            <span class="text-3xl font-black text-purple-300">{{ resultA()!.score }}</span>
+            <span class="text-purple-300 text-lg">vs</span>
+            <span class="text-2xl font-black text-white">{{ resultB()!.score }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Score cards -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs font-semibold text-indigo-600 mb-2 flex items-center gap-1.5">
+            <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold flex items-center justify-center">A</span>
+            {{ hostname(urlA()) }}
+          </p>
+          <app-score-card [score]="resultA()!.score" />
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-purple-600 mb-2 flex items-center gap-1.5">
+            <span class="w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] font-bold flex items-center justify-center">B</span>
+            {{ hostname(urlB()) }}
+          </p>
+          <app-score-card [score]="resultB()!.score" />
+        </div>
+      </div>
+
+      <!-- Metrics comparison table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-slate-700">Metric Breakdown</h3>
+          <div class="flex items-center gap-3 text-xs text-slate-500">
+            <span class="flex items-center gap-1">
+              <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold flex items-center justify-center">A</span>
+              {{ winsA() }} wins
+            </span>
+            <span class="text-slate-300">·</span>
+            <span class="flex items-center gap-1">
+              <span class="w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] font-bold flex items-center justify-center">B</span>
+              {{ winsB() }} wins
+            </span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                <th class="text-left px-5 py-3 w-1/3">Metric</th>
+                <th class="text-left px-4 py-3 w-1/3">
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold flex items-center justify-center">A</span>
+                    {{ hostname(urlA()) }}
+                  </span>
+                </th>
+                <th class="text-left px-4 py-3 w-1/3">
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] font-bold flex items-center justify-center">B</span>
+                    {{ hostname(urlB()) }}
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              @for (row of metrics(); track row.label) {
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="px-5 py-3.5">
+                    <p class="font-medium text-slate-700 text-xs">{{ row.label }}</p>
+                    @if (row.hint) {
+                      <p class="text-slate-400 text-[10px] mt-0.5">{{ row.hint }}</p>
+                    }
+                  </td>
+
+                  <!-- Site A cell -->
+                  <td class="px-4 py-3.5" [class]="row.resultA === 'win' ? 'bg-emerald-50' : ''">
+                    <div class="flex items-center gap-2">
+                      @if (row.resultA === 'win') {
+                        <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                      } @else if (row.resultA === 'lose') {
+                        <svg class="w-4 h-4 text-red-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                      } @else {
+                        <span class="w-4 h-4 shrink-0 flex items-center justify-center text-slate-300 text-xs font-bold">=</span>
+                      }
+                      <span
+                        class="text-sm truncate max-w-[140px]"
+                        [class]="row.resultA === 'win' ? 'text-emerald-700 font-semibold' : row.resultA === 'lose' ? 'text-red-500' : 'text-slate-500'"
+                      >{{ row.valueA }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Site B cell -->
+                  <td class="px-4 py-3.5" [class]="row.resultB === 'win' ? 'bg-emerald-50' : ''">
+                    <div class="flex items-center gap-2">
+                      @if (row.resultB === 'win') {
+                        <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                      } @else if (row.resultB === 'lose') {
+                        <svg class="w-4 h-4 text-red-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                      } @else {
+                        <span class="w-4 h-4 shrink-0 flex items-center justify-center text-slate-300 text-xs font-bold">=</span>
+                      }
+                      <span
+                        class="text-sm truncate max-w-[140px]"
+                        [class]="row.resultB === 'win' ? 'text-emerald-700 font-semibold' : row.resultB === 'lose' ? 'text-red-500' : 'text-slate-500'"
+                      >{{ row.valueB }}</span>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Headings comparison -->
+      <div class="grid grid-cols-2 gap-4">
+        <app-headings-card title="Site A — H1" [headings]="resultA()!.h1" />
+        <app-headings-card title="Site B — H1" [headings]="resultB()!.h1" />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <app-headings-card title="Site A — H2" [headings]="resultA()!.h2" />
+        <app-headings-card title="Site B — H2" [headings]="resultB()!.h2" />
+      </div>
+
+    </div>
+  }
+
 </main>
