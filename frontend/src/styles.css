@@ -27,3 +27,11 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 .check-item { animation: check-in 0.3s ease-out both; }
+
+/* Print styles for /report page */
+@media print {
+  app-nav-bar, .print\:hidden { display: none !important; }
+  body { background: white !important; }
+  * { animation: none !important; transition: none !important; }
+  .bg-linear-to-r { background: #4f46e5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

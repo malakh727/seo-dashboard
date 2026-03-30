@@ -124,7 +124,7 @@
 
 > Goal: A clean, shareable, print-friendly single-analysis report.
 
-- [ ] **Report page component**
+- [x] **Report page component**
   - New file: `frontend/src/app/pages/report/report.ts + .html`
   - URL param: `/report?data=<base64-encoded-result>` (no backend needed)
   - OG image banner at top (if present)
@@ -132,9 +132,9 @@
   - Full checklist breakdown, all cards in single-column layout
   - Print stylesheet (`@media print`) for clean PDF export
 
-- [ ] **"Share Report" button** on main page results toolbar
+- [x] **"Share Report" button** on main page results toolbar
   - Encodes current result as base64 in URL → copies link to clipboard
-  - File: `frontend/src/app/app.html` + `app.ts`
+  - File: `frontend/src/app/pages/home/home.html` + `home.ts`
 
 ---
 
@@ -142,13 +142,13 @@
 
 > Goal: Static educational content that adds depth and SEO value to the app itself.
 
-- [ ] **Tips page component**
+- [x] **Tips page component**
   - New file: `frontend/src/app/pages/tips/tips.ts + .html`
   - Accordion-style sections, one per SEO metric checked
   - Each section: what it is, why it matters, how to fix it, link to further reading
   - Topics: Page Title · Meta Description · H1/H2 Structure · Open Graph · Canonical URL · Alt Text · Word Count
 
-- [ ] **Link from checklist** — each checklist item gets a small "?" icon linking to its tips section
+- [x] **Link from checklist** — each checklist item gets a small "?" icon linking to its tips section
   - File: `frontend/src/app/components/seo-checklist/seo-checklist.html`
 
 ---

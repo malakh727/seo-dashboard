@@ -1,12 +1,118 @@
-<main class="max-w-4xl mx-auto px-6 py-12 animate-fade-in">
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 flex flex-col items-center text-center gap-4">
-    <div class="bg-indigo-50 rounded-2xl p-4">
-      <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+<main class="max-w-3xl mx-auto px-6 py-10 animate-fade-in print:px-0 print:py-0 print:max-w-none">
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-8 flex flex-col items-center text-center gap-4">
+      <svg class="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
       </svg>
+      <p class="text-red-700 font-medium">{{ error() }}</p>
+      <a routerLink="/" class="text-sm text-indigo-600 hover:underline">← Go to analyzer</a>
     </div>
-    <h2 class="text-xl font-bold text-slate-800">Report Page</h2>
-    <p class="text-slate-500 text-sm max-w-sm">Shareable, print-friendly single-analysis report with full breakdown — coming in Phase 6.</p>
-    <span class="bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full">Phase 6</span>
-  </div>
+  }
+
+  @if (result()) {
+    <!-- Report header -->
+    <div class="bg-linear-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 mb-6 text-white print:rounded-none print:mb-4">
+      <div class="flex items-center gap-3 mb-1">
+        <svg class="w-5 h-5 text-white/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span class="text-xs text-white/60 font-medium tracking-wide uppercase">SEO Report</span>
+      </div>
+      <h1 class="text-lg font-bold break-all">{{ hostname() || siteUrl() }}</h1>
+      <p class="text-indigo-200 text-xs mt-1">Generated {{ generatedAt() | date:'medium' }}</p>
+
+      <!-- Print / Back controls -->
+      <div class="flex items-center gap-3 mt-4 print:hidden">
+        <a routerLink="/" class="text-xs text-white/70 hover:text-white flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to analyzer
+        </a>
+        <button
+          (click)="print()"
+          class="ml-auto flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-lg px-3 py-1.5 text-xs font-medium"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.75 19.5c-.007.07 0 .14.02.207a.75.75 0 00.658.5l.74.09a41.997 41.997 0 009.664 0l.74-.09a.75.75 0 00.658-.5.077.077 0 00.02-.207L17.28 13.83m-10.56 0 .36-5.83a.75.75 0 01.75-.7h8.3a.75.75 0 01.75.7l.36 5.83m-13.5 0h13.5" />
+          </svg>
+          Print / Save PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- OG Image banner -->
+    @if (result()!.ogImage) {
+      <div class="mb-6 rounded-2xl overflow-hidden border border-slate-200 print:mb-4">
+        <img
+          [src]="result()!.ogImage"
+          alt="Page OG image"
+          class="w-full max-h-48 object-cover"
+          onerror="this.parentElement.style.display='none'"
+        />
+      </div>
+    }
+
+    <!-- Score + interpretation -->
+    <div class="mb-6 print:mb-4">
+      <app-score-card [score]="result()!.score" />
+
+      @if (interpretationText()) {
+        <div class="mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-800">
+          {{ interpretationText() }}
+        </div>
+      }
+    </div>
+
+    <!-- Top issues -->
+    @if (topIssues().length) {
+      <div class="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-5 print:mb-4">
+        <h2 class="text-sm font-semibold text-amber-800 mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          Top Issues to Fix
+        </h2>
+        <ul class="space-y-2">
+          @for (issue of topIssues(); track issue.label) {
+            <li class="flex items-center justify-between text-sm">
+              <span class="text-amber-900">{{ issue.label }}</span>
+              <span class="bg-amber-200 text-amber-800 text-xs font-semibold px-2 py-0.5 rounded-full">+{{ issue.maxPoints }} pts</span>
+            </li>
+          }
+        </ul>
+        <p class="text-xs text-amber-700 mt-3">Fixing these could raise the score to <strong>{{ projectedScore() }}</strong>+</p>
+      </div>
+    }
+
+    <!-- Meta info -->
+    <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4 print:mb-4">
+      <app-meta-card label="Page Title" [value]="result()!.title" />
+      <app-meta-card label="Meta Description" [value]="result()!.metaDescription" />
+    </div>
+
+    <!-- Extended info -->
+    <div class="mb-6 print:mb-4">
+      <app-og-card [result]="result()!" />
+    </div>
+
+    <!-- Checklist -->
+    <div class="mb-6 print:mb-4">
+      <app-seo-checklist [items]="result()!.scoreBreakdown" />
+    </div>
+
+    <!-- Headings -->
+    <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4 print:mb-4">
+      <app-headings-card title="H1 Headings" [headings]="result()!.h1" />
+      <app-headings-card title="H2 Headings" [headings]="result()!.h2" />
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-slate-400 pt-4 border-t border-slate-200 print:pt-2">
+      Generated by SEO Analytics Dashboard · {{ generatedAt() | date:'mediumDate' }}
+    </div>
+  }
+
 </main>

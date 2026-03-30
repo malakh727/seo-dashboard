@@ -30,6 +30,7 @@ export class HomePage {
   prefillUrl = signal('');
   quickFixOpen = signal(false);
   previousScore = signal<number | null>(null);
+  linkCopied = signal(false);
 
   constructor() {
     this.route.queryParams.subscribe(params => {
@@ -149,6 +150,18 @@ export class HomePage {
     a.download = `seo-analysis.json`;
     a.click();
     URL.revokeObjectURL(a.href);
+  }
+
+  shareReport(): void {
+    const r = this.result();
+    if (!r) return;
+    const payload = JSON.stringify({ url: this.lastUrl(), ...r });
+    const encoded = btoa(unescape(encodeURIComponent(payload)));
+    const url = `${window.location.origin}/report?data=${encoded}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2000);
+    });
   }
 
   private calculateScore = calculateScore;
