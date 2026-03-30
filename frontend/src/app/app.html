@@ -96,7 +96,12 @@
     @if (result(); as r) {
       <div class="animate-fade-in space-y-5">
       <div class="flex items-center justify-between">
-        <p class="text-xs text-slate-400 truncate max-w-xs">{{ lastUrl() }}</p>
+        <div class="flex items-center gap-2 min-w-0">
+          @if (faviconUrl()) {
+            <img [src]="faviconUrl()" alt="" class="w-4 h-4 rounded shrink-0" />
+          }
+          <p class="text-xs text-slate-400 truncate">{{ lastUrl() }}</p>
+        </div>
         <div class="flex gap-2 shrink-0">
           <button
             (click)="copyResults()"
@@ -124,6 +129,58 @@
         <div class="stagger-2"><app-meta-card label="Page Title" [value]="r.title" /></div>
         <div class="stagger-3"><app-meta-card label="Meta Description" [value]="r.metaDescription" /></div>
       </div>
+
+      <!-- Score interpretation callout -->
+      @if (interpretationText()) {
+        <div class="stagger-8 bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-4 flex items-start gap-3">
+          <svg class="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <p class="text-sm text-indigo-800">{{ interpretationText() }}</p>
+        </div>
+      }
+
+      <!-- Quick-fix summary box -->
+      @if (topIssues().length > 0) {
+        <div class="stagger-9 bg-white border border-amber-200 rounded-2xl shadow-sm overflow-hidden">
+          <button
+            (click)="quickFixOpen.set(!quickFixOpen())"
+            class="w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium text-slate-700 hover:bg-amber-50 transition-colors"
+          >
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              Improve Your Score
+              <span class="bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+                {{ topIssues().length }} {{ topIssues().length === 1 ? 'issue' : 'issues' }}
+              </span>
+            </span>
+            <svg
+              class="w-4 h-4 text-slate-400 transition-transform"
+              [class.rotate-180]="quickFixOpen()"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          @if (quickFixOpen()) {
+            <ul class="divide-y divide-amber-50 border-t border-amber-100">
+              @for (issue of topIssues(); track issue.label) {
+                <li class="flex items-start gap-4 px-5 py-3.5">
+                  <span class="shrink-0 mt-0.5 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full tabular-nums">
+                    +{{ issue.maxPoints }}
+                  </span>
+                  <div>
+                    <p class="text-sm font-medium text-slate-700">{{ issue.label }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ getFixAdvice(issue.label) }}</p>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="stagger-4"><app-seo-checklist [items]="r.scoreBreakdown" /></div>

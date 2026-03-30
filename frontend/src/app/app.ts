@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Seo } from './services/seo';
 import { HistoryService } from './services/history.service';
@@ -26,7 +26,57 @@ export class App {
   result = signal<SeoResult | null>(null);
   lastUrl = signal('');
   historyOpen = signal(false);
+  quickFixOpen = signal(false);
   previousScore = signal<number | null>(null);
+
+  private readonly FIX_ADVICE: Record<string, string> = {
+    'Page title present': 'Add a <title> tag inside your page\'s <head>',
+    'Title length (30–60 chars)': 'Rewrite your title to be between 30 and 60 characters',
+    'Meta description present': 'Add <meta name="description" content="..."> to your <head>',
+    'Meta description length (120–160 chars)': 'Adjust your meta description to 120–160 characters',
+    'H1 heading present': 'Add at least one <h1> tag to your page content',
+    'Single H1 tag (best practice)': 'Remove extra <h1> tags — only one per page is recommended',
+    'H2 headings present': 'Add <h2> tags to divide your content into sections',
+  };
+
+  topIssues = computed(() =>
+    (this.result()?.scoreBreakdown ?? [])
+      .filter(i => !i.passed)
+      .sort((a, b) => b.maxPoints - a.maxPoints)
+      .slice(0, 3)
+  );
+
+  projectedScore = computed(() => {
+    const r = this.result();
+    if (!r) return 0;
+    return Math.min(100, r.score + this.topIssues().reduce((s, i) => s + i.maxPoints, 0));
+  });
+
+  faviconUrl = computed(() => {
+    const url = this.lastUrl();
+    if (!url) return '';
+    try {
+      const hostname = new URL(url.startsWith('http') ? url : 'https://' + url).hostname;
+      return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+    } catch { return ''; }
+  });
+
+  interpretationText = computed(() => {
+    const r = this.result();
+    if (!r) return '';
+    if (r.score === 100) return 'Your page passes all SEO checks — perfect score!';
+    const issues = this.topIssues();
+    if (issues.length === 0) return '';
+    const projected = this.projectedScore();
+    if (issues.length === 1)
+      return `Fixing "${issues[0].label}" (+${issues[0].maxPoints} pts) would bring your score to ${projected}.`;
+    const list = issues.map(i => `"${i.label}" (+${i.maxPoints} pts)`).join(', ');
+    return `Top issues: ${list}. Fixing these could reach ${projected}+.`;
+  });
+
+  getFixAdvice(label: string): string {
+    return this.FIX_ADVICE[label] ?? `Address the "${label}" check`;
+  }
 
   onAnalyze(url: string) {
     this.lastUrl.set(url);

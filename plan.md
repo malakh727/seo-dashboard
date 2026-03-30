@@ -51,16 +51,16 @@
 
 > Goal: Add smarter, more useful content to the results without adding new routes.
 
-- [ ] **Score interpretation callout** — a dynamic sentence below the score card
+- [x] **Score interpretation callout** — a dynamic sentence below the score card
   - Example: *"Missing meta description (−25 pts) and multiple H1 tags (−15 pts). Fix these to reach 85+."*
   - File: `frontend/src/app/app.ts` — compute `topIssues()` from `scoreBreakdown`
   - File: `frontend/src/app/app.html` — show below the top grid
 
-- [ ] **Quick-fix summary box** — shows only failed checklist items as action items
+- [x] **Quick-fix summary box** — shows only failed checklist items as action items
   - File: `frontend/src/app/app.html` — collapsible "Improve Your Score" card
   - One-line advice per failed check (e.g. "Add a `<meta name='description'>` tag")
 
-- [ ] **Domain favicon** — show the site's favicon next to the analyzed URL in the results header
+- [x] **Domain favicon** — show the site's favicon next to the analyzed URL in the results header
   - Source: `https://www.google.com/s2/favicons?domain=<hostname>&sz=32`
   - File: `frontend/src/app/app.html` — results toolbar row
 

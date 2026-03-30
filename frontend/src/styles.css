@@ -18,6 +18,8 @@
 .stagger-5  { animation: fade-in 0.4s ease-out both; animation-delay: 320ms; }
 .stagger-6  { animation: fade-in 0.4s ease-out both; animation-delay: 400ms; }
 .stagger-7  { animation: fade-in 0.4s ease-out both; animation-delay: 480ms; }
+.stagger-8  { animation: fade-in 0.4s ease-out both; animation-delay: 200ms; }
+.stagger-9  { animation: fade-in 0.4s ease-out both; animation-delay: 280ms; }
 
 /* Checklist item stagger */
 @keyframes check-in {
