@@ -1,0 +1,181 @@
+<main class="max-w-4xl mx-auto px-6 py-8 space-y-5">
+  <app-url-input [loading]="loading()" (analyze)="onAnalyze($event)" />
+
+  @if (historyService.entries().length > 0) {
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <button
+        (click)="historyOpen.set(!historyOpen())"
+        class="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+      >
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Recent Analyses
+          <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">{{ historyService.entries().length }}</span>
+        </span>
+        <svg
+          class="w-4 h-4 text-slate-400 transition-transform"
+          [class.rotate-180]="historyOpen()"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      @if (historyOpen()) {
+        <ul class="divide-y divide-slate-100 border-t border-slate-100">
+          @for (entry of historyService.entries(); track entry.url) {
+            <li>
+              <button
+                (click)="loadFromHistory(entry)"
+                class="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-slate-50 transition-colors"
+              >
+                <div class="min-w-0">
+                  <p class="text-sm text-slate-700 truncate">{{ entry.url }}</p>
+                  <p class="text-xs text-slate-400 mt-0.5">{{ entry.analyzedAt | date: 'MMM d, h:mm a' }}</p>
+                </div>
+                <span
+                  class="ml-4 shrink-0 text-sm font-semibold px-2 py-0.5 rounded-full"
+                  [class]="entry.result.score >= 70 ? 'bg-emerald-50 text-emerald-700' : entry.result.score >= 40 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'"
+                >{{ entry.result.score }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+        <div class="px-5 py-2 border-t border-slate-100">
+          <button (click)="historyService.clear()" class="text-xs text-slate-400 hover:text-red-500 transition-colors">
+            Clear history
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (error()) {
+    <div class="bg-white border border-red-200 rounded-2xl p-5 flex items-start gap-4 shadow-sm">
+      <div class="bg-red-100 rounded-xl p-2 shrink-0">
+        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <p class="font-semibold text-red-700 text-sm">Analysis Failed</p>
+        <p class="text-red-600 text-sm mt-0.5">{{ error() }}</p>
+        @if (lastUrl()) {
+          <button
+            (click)="onAnalyze(lastUrl())"
+            class="mt-3 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            Try Again
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <app-loading-skeleton />
+  }
+
+  @if (result(); as r) {
+    <div class="animate-fade-in space-y-5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 min-w-0">
+          @if (faviconUrl()) {
+            <img [src]="faviconUrl()" alt="" class="w-4 h-4 rounded shrink-0" />
+          }
+          <p class="text-xs text-slate-400 truncate">{{ lastUrl() }}</p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button
+            (click)="copyResults()"
+            class="flex items-center gap-1.5 text-xs font-medium text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            Copy
+          </button>
+          <button
+            (click)="downloadJson()"
+            class="flex items-center gap-1.5 text-xs font-medium text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            JSON
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="stagger-1"><app-score-card [score]="r.score" [previousScore]="previousScore()" /></div>
+        <div class="stagger-2"><app-meta-card label="Page Title" [value]="r.title" /></div>
+        <div class="stagger-3"><app-meta-card label="Meta Description" [value]="r.metaDescription" /></div>
+      </div>
+
+      <!-- Score interpretation callout -->
+      @if (interpretationText()) {
+        <div class="stagger-8 bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-4 flex items-start gap-3">
+          <svg class="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <p class="text-sm text-indigo-800">{{ interpretationText() }}</p>
+        </div>
+      }
+
+      <!-- Quick-fix summary box -->
+      @if (topIssues().length > 0) {
+        <div class="stagger-9 bg-white border border-amber-200 rounded-2xl shadow-sm overflow-hidden">
+          <button
+            (click)="quickFixOpen.set(!quickFixOpen())"
+            class="w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium text-slate-700 hover:bg-amber-50 transition-colors"
+          >
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              Improve Your Score
+              <span class="bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+                {{ topIssues().length }} {{ topIssues().length === 1 ? 'issue' : 'issues' }}
+              </span>
+            </span>
+            <svg
+              class="w-4 h-4 text-slate-400 transition-transform"
+              [class.rotate-180]="quickFixOpen()"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          @if (quickFixOpen()) {
+            <ul class="divide-y divide-amber-50 border-t border-amber-100">
+              @for (issue of topIssues(); track issue.label) {
+                <li class="flex items-start gap-4 px-5 py-3.5">
+                  <span class="shrink-0 mt-0.5 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full tabular-nums">
+                    +{{ issue.maxPoints }}
+                  </span>
+                  <div>
+                    <p class="text-sm font-medium text-slate-700">{{ issue.label }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ getFixAdvice(issue.label) }}</p>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="stagger-4"><app-seo-checklist [items]="r.scoreBreakdown" /></div>
+        <div class="stagger-5"><app-og-card [result]="r" /></div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="stagger-6"><app-headings-card title="H1 Headings" [headings]="r.h1" /></div>
+        <div class="stagger-7"><app-headings-card title="H2 Headings" [headings]="r.h2" /></div>
+      </div>
+    </div>
+  }
+</main>

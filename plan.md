@@ -70,12 +70,12 @@
 
 > Goal: Enable multi-page navigation. Required before adding any new pages.
 
-- [ ] **Enable Angular Router**
+- [x] **Enable Angular Router**
   - File: `frontend/src/app/app.routes.ts` — define routes for `/`, `/history`, `/compare`, `/tips`, `/report`
   - File: `frontend/src/app/app.config.ts` — confirm `provideRouter` is configured
   - File: `frontend/src/app/app.html` — add `<router-outlet>` and a top nav bar
 
-- [ ] **Shared nav bar component**
+- [x] **Shared nav bar component**
   - New file: `frontend/src/app/components/nav-bar/nav-bar.ts`
   - Links: Home · History · Compare · Tips
   - Active link highlight using `routerLinkActive`
