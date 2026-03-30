@@ -1,12 +1,205 @@
-<main class="max-w-4xl mx-auto px-6 py-12 animate-fade-in">
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 flex flex-col items-center text-center gap-4">
-    <div class="bg-indigo-50 rounded-2xl p-4">
-      <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
+<main class="max-w-4xl mx-auto px-6 py-8 space-y-6 animate-fade-in">
+
+  <!-- ── Empty state ─────────────────────────────────────────────────── -->
+  @if (historyService.fullHistory().length === 0) {
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-14 flex flex-col items-center text-center gap-4">
+      <div class="bg-slate-100 rounded-2xl p-4">
+        <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-700">No analyses yet</h3>
+      <p class="text-slate-400 text-sm max-w-xs">Run your first analysis to start building your history and track score improvements over time.</p>
+      <a routerLink="/" class="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+        Start Analyzing
+      </a>
     </div>
-    <h2 class="text-xl font-bold text-slate-800">History Page</h2>
-    <p class="text-slate-500 text-sm max-w-sm">Full analysis history with table view, score trends, and domain grouping — coming in Phase 4.</p>
-    <span class="bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full">Phase 4</span>
-  </div>
+  }
+
+  <!-- ── All Analyses table ──────────────────────────────────────────── -->
+  @if (sortedEntries().length > 0) {
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+      <!-- Table header bar -->
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <h2 class="text-sm font-semibold text-slate-700">All Analyses</h2>
+          <span class="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded-full">
+            {{ sortedEntries().length }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Sort buttons -->
+          <button
+            (click)="toggleSort('date')"
+            class="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
+            [class]="sortField() === 'date' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-slate-50'"
+          >
+            Date {{ sortIcon('date') }}
+          </button>
+          <button
+            (click)="toggleSort('score')"
+            class="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
+            [class]="sortField() === 'score' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-slate-50'"
+          >
+            Score {{ sortIcon('score') }}
+          </button>
+          <div class="w-px h-4 bg-slate-200 mx-1"></div>
+          <button
+            (click)="historyService.clear()"
+            class="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors px-2 py-1.5"
+          >
+            Clear all
+          </button>
+        </div>
+      </div>
+
+      <!-- Rows -->
+      <ul class="divide-y divide-slate-50">
+        @for (entry of sortedEntries(); track entry.analyzedAt) {
+          <li class="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors group">
+
+            <!-- Favicon + URL -->
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <img [src]="favicon(entry.url)" alt="" class="w-5 h-5 rounded shrink-0" />
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-slate-700 truncate">{{ hostname(entry.url) }}</p>
+                <p class="text-xs text-slate-400 truncate">{{ entry.url }}</p>
+              </div>
+            </div>
+
+            <!-- Score badge -->
+            <span
+              class="shrink-0 text-sm font-bold px-2.5 py-0.5 rounded-full tabular-nums"
+              [class]="scoreBadge(entry.result.score)"
+            >{{ entry.result.score }}</span>
+
+            <!-- Date -->
+            <span class="shrink-0 text-xs text-slate-400 hidden sm:block w-28 text-right">
+              {{ entry.analyzedAt | date: 'MMM d, h:mm a' }}
+            </span>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                (click)="analyzeAgain(entry.url)"
+                title="Analyze again"
+                class="p-1.5 rounded-lg hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              <button
+                (click)="deleteEntry(entry.analyzedAt)"
+                title="Delete"
+                class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
+  <!-- ── Score Trends ────────────────────────────────────────────────── -->
+  @if (domainsWithTrend().length > 0) {
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+
+      <div class="mb-4">
+        <h2 class="text-sm font-semibold text-slate-700">Score Trends</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Domains you have analyzed more than once</p>
+      </div>
+
+      <!-- Domain tabs -->
+      <div class="flex flex-wrap gap-2 mb-5">
+        @for (group of domainsWithTrend(); track group.domain) {
+          <button
+            (click)="selectedDomain.set(group.domain)"
+            class="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors"
+            [class]="activeTrend()?.domain === group.domain
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+          >
+            <img [src]="favicon('https://' + group.domain)" alt="" class="w-3.5 h-3.5 rounded" />
+            {{ group.domain }}
+            <span
+              class="rounded-full px-1.5 text-[10px] font-bold"
+              [class]="activeTrend()?.domain === group.domain ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'"
+            >{{ group.entries.length }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Sparkline chart -->
+      @if (activeTrend(); as trend) {
+        <div class="border border-slate-100 rounded-xl p-4 bg-slate-50">
+
+          <!-- SVG chart -->
+          <svg
+            [attr.viewBox]="'0 0 ' + SVG_W + ' ' + SVG_H"
+            class="w-full"
+            [attr.height]="SVG_H"
+            preserveAspectRatio="none"
+          >
+            <!-- Reference lines at 70 and 40 -->
+            <line x1="0" [attr.y1]="refY(70)" [attr.x2]="SVG_W" [attr.y2]="refY(70)"
+              stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4 3" />
+            <line x1="0" [attr.y1]="refY(40)" [attr.x2]="SVG_W" [attr.y2]="refY(40)"
+              stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4 3" />
+
+            <!-- Sparkline -->
+            <polyline
+              [attr.points]="sparklinePoints(trend.entries)"
+              fill="none"
+              stroke="#6366f1"
+              stroke-width="2.5"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+
+            <!-- Dots -->
+            @for (dot of sparklineDots(trend.entries); track dot.date) {
+              <circle
+                [attr.cx]="dot.x"
+                [attr.cy]="dot.y"
+                r="5"
+                [attr.fill]="dotColor(dot.score)"
+                stroke="white"
+                stroke-width="2"
+              />
+            }
+          </svg>
+
+          <!-- Score + date labels below chart -->
+          <div class="flex justify-between mt-3 px-1">
+            @for (dot of sparklineDots(trend.entries); track dot.date) {
+              <div class="flex flex-col items-center gap-0.5">
+                <span
+                  class="text-xs font-bold tabular-nums"
+                  [style.color]="dotColor(dot.score)"
+                >{{ dot.score }}</span>
+                <span class="text-[10px] text-slate-400">{{ dot.date | date: 'MMM d' }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Legend -->
+          <div class="flex items-center gap-4 mt-3 pt-3 border-t border-slate-200 text-[10px] text-slate-400">
+            <span class="flex items-center gap-1"><span class="w-3 border-t-2 border-dashed border-slate-300 inline-block"></span> 70 threshold</span>
+            <span class="flex items-center gap-1"><span class="w-3 border-t-2 border-dashed border-slate-300 inline-block"></span> 40 threshold</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> Good</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> Needs Work</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span> Poor</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
 </main>

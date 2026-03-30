@@ -1,54 +1,21 @@
 <main class="max-w-4xl mx-auto px-6 py-8 space-y-5">
-  <app-url-input [loading]="loading()" (analyze)="onAnalyze($event)" />
+  <app-url-input [loading]="loading()" [prefill]="prefillUrl()" (analyze)="onAnalyze($event)" />
 
   @if (historyService.entries().length > 0) {
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-      <button
-        (click)="historyOpen.set(!historyOpen())"
-        class="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-      >
-        <span class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Recent Analyses
-          <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">{{ historyService.entries().length }}</span>
-        </span>
-        <svg
-          class="w-4 h-4 text-slate-400 transition-transform"
-          [class.rotate-180]="historyOpen()"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm px-5 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2 text-sm text-slate-500">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-      </button>
-
-      @if (historyOpen()) {
-        <ul class="divide-y divide-slate-100 border-t border-slate-100">
-          @for (entry of historyService.entries(); track entry.url) {
-            <li>
-              <button
-                (click)="loadFromHistory(entry)"
-                class="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-slate-50 transition-colors"
-              >
-                <div class="min-w-0">
-                  <p class="text-sm text-slate-700 truncate">{{ entry.url }}</p>
-                  <p class="text-xs text-slate-400 mt-0.5">{{ entry.analyzedAt | date: 'MMM d, h:mm a' }}</p>
-                </div>
-                <span
-                  class="ml-4 shrink-0 text-sm font-semibold px-2 py-0.5 rounded-full"
-                  [class]="entry.result.score >= 70 ? 'bg-emerald-50 text-emerald-700' : entry.result.score >= 40 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'"
-                >{{ entry.result.score }}</span>
-              </button>
-            </li>
-          }
-        </ul>
-        <div class="px-5 py-2 border-t border-slate-100">
-          <button (click)="historyService.clear()" class="text-xs text-slate-400 hover:text-red-500 transition-colors">
-            Clear history
-          </button>
-        </div>
-      }
+        <span class="font-medium text-slate-700">{{ historyService.entries().length }}</span> recent
+        {{ historyService.entries().length === 1 ? 'analysis' : 'analyses' }}
+      </div>
+      <a routerLink="/history" class="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+        View all
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
     </div>
   }
 

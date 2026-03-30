@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -8,9 +8,17 @@ import { FormsModule } from '@angular/forms';
 })
 export class UrlInput {
   loading = input(false);
+  prefill = input('');
   analyze = output<string>();
 
   url = '';
+
+  constructor() {
+    effect(() => {
+      const p = this.prefill();
+      if (p) this.url = p;
+    });
+  }
 
   submit() {
     if (this.url.trim()) {

@@ -1,5 +1,6 @@
 import { Component, signal, inject, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Seo } from '../../services/seo';
 import { HistoryService } from '../../services/history.service';
 import { ScoreItem, SeoResult } from '../../models/seo.models';
@@ -13,20 +14,30 @@ import { OgCard } from '../../components/og-card/og-card';
 
 @Component({
   selector: 'app-home-page',
-  imports: [UrlInput, ScoreCard, MetaCard, SeoChecklist, HeadingsCard, LoadingSkeleton, OgCard, DatePipe],
+  imports: [UrlInput, ScoreCard, MetaCard, SeoChecklist, HeadingsCard, LoadingSkeleton, OgCard, DatePipe, RouterLink],
   templateUrl: './home.html',
 })
 export class HomePage {
   private seoService = inject(Seo);
+  private route = inject(ActivatedRoute);
   historyService = inject(HistoryService);
 
   loading = signal(false);
   error = signal('');
   result = signal<SeoResult | null>(null);
   lastUrl = signal('');
-  historyOpen = signal(false);
+  prefillUrl = signal('');
   quickFixOpen = signal(false);
   previousScore = signal<number | null>(null);
+
+  constructor() {
+    this.route.queryParams.subscribe(params => {
+      if (params['url']) {
+        this.prefillUrl.set(params['url']);
+        this.onAnalyze(params['url']);
+      }
+    });
+  }
 
   private readonly FIX_ADVICE: Record<string, string> = {
     'Page title present': "Add a <title> tag inside your page's <head>",
@@ -137,14 +148,6 @@ export class HomePage {
     a.download = `seo-analysis.json`;
     a.click();
     URL.revokeObjectURL(a.href);
-  }
-
-  loadFromHistory(entry: import('../../services/history.service').HistoryEntry): void {
-    this.result.set(entry.result);
-    this.lastUrl.set(entry.url);
-    this.previousScore.set(null);
-    this.error.set('');
-    this.historyOpen.set(false);
   }
 
   private calculateScore(data: any): { score: number; scoreBreakdown: ScoreItem[] } {

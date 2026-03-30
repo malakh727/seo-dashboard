@@ -86,19 +86,20 @@
 
 > Goal: Full-page history view replacing the limited dropdown panel.
 
-- [ ] **History page component**
+- [x] **History page component**
   - New file: `frontend/src/app/pages/history/history.ts + .html`
   - Table view: URL · Score badge · Date · Re-analyze button · Delete button
   - Sortable by score or date
-  - Score-over-time line chart for repeated analyses of the same domain
-    - Use a lightweight chart lib (e.g. `ngx-charts` or plain SVG polyline)
+  - Score-over-time SVG sparkline chart per domain (with colored dots + reference lines)
   - Bulk-clear button
 
-- [ ] **Update history service** to store domain grouping metadata
+- [x] **Update history service** to store domain grouping metadata
   - File: `frontend/src/app/services/history.service.ts`
+  - Added `fullHistory` signal (50 entries, keeps all runs including repeats)
+  - Added `deleteEntry(analyzedAt)` method
 
-- [ ] **Remove the dropdown history panel** from the main page once this page exists
-  - File: `frontend/src/app/app.html`
+- [x] **Remove the dropdown history panel** from the main page
+  - Replaced with compact "N recent analyses → View all" bar linking to /history
 
 ---
 
