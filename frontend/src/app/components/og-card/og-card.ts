@@ -40,14 +40,22 @@ import { SeoResult } from '../../models/seo.models';
         </div>
 
         <!-- OG Image -->
-        <div class="py-2.5 flex items-start justify-between gap-4">
-          <span class="text-xs text-slate-500 shrink-0 pt-0.5">OG Image</span>
-          @if (result().ogImage) {
-            <span class="text-xs text-emerald-600 font-medium">Present</span>
-          } @else {
+        @if (result().ogImage) {
+          <div class="py-2.5">
+            <span class="text-xs text-slate-500 block mb-1.5">OG Image</span>
+            <img
+              [src]="result().ogImage"
+              alt="OG preview"
+              class="w-full h-28 object-cover rounded-xl border border-slate-100"
+              onerror="this.style.display='none'"
+            />
+          </div>
+        } @else {
+          <div class="py-2.5 flex items-start justify-between gap-4">
+            <span class="text-xs text-slate-500 shrink-0 pt-0.5">OG Image</span>
             <span class="text-xs text-red-400">Missing</span>
-          }
-        </div>
+          </div>
+        }
 
         <!-- Images -->
         <div class="py-2.5 flex items-center justify-between">

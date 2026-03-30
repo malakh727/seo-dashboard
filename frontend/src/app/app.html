@@ -1,8 +1,15 @@
-<div class="min-h-screen bg-slate-50">
-  <header class="bg-white shadow-sm border-b border-slate-200">
-    <div class="max-w-4xl mx-auto px-6 py-5">
-      <h1 class="text-2xl font-bold text-slate-800">SEO Analytics Dashboard</h1>
-      <p class="text-sm text-slate-500 mt-0.5">Analyze SEO elements of any webpage instantly</p>
+<div class="min-h-screen bg-slate-100">
+  <header class="bg-linear-to-r from-indigo-600 to-purple-600 shadow-lg">
+    <div class="max-w-4xl mx-auto px-6 py-6 flex items-center gap-4">
+      <div class="bg-white/20 rounded-xl p-2.5 shrink-0">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-white">SEO Analytics Dashboard</h1>
+        <p class="text-indigo-200 text-sm mt-0.5">Analyze SEO elements of any webpage instantly</p>
+      </div>
     </div>
   </header>
 
@@ -61,18 +68,21 @@
     }
 
     @if (error()) {
-      <div class="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-        <svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-        </svg>
+      <div class="bg-white border border-red-200 rounded-2xl p-5 flex items-start gap-4 shadow-sm">
+        <div class="bg-red-100 rounded-xl p-2 shrink-0">
+          <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
         <div class="flex-1">
-          <p class="text-red-700 text-sm">{{ error() }}</p>
+          <p class="font-semibold text-red-700 text-sm">Analysis Failed</p>
+          <p class="text-red-600 text-sm mt-0.5">{{ error() }}</p>
           @if (lastUrl()) {
             <button
               (click)="onAnalyze(lastUrl())"
-              class="mt-2 text-xs font-medium text-red-600 hover:text-red-800 underline"
+              class="mt-3 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors"
             >
-              Retry
+              Try Again
             </button>
           }
         </div>
@@ -84,6 +94,7 @@
     }
 
     @if (result(); as r) {
+      <div class="animate-fade-in space-y-5">
       <div class="flex items-center justify-between">
         <p class="text-xs text-slate-400 truncate max-w-xs">{{ lastUrl() }}</p>
         <div class="flex gap-2 shrink-0">
@@ -109,19 +120,20 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <app-score-card [score]="r.score" [previousScore]="previousScore()" />
-        <app-meta-card label="Page Title" [value]="r.title" />
-        <app-meta-card label="Meta Description" [value]="r.metaDescription" />
+        <div class="stagger-1"><app-score-card [score]="r.score" [previousScore]="previousScore()" /></div>
+        <div class="stagger-2"><app-meta-card label="Page Title" [value]="r.title" /></div>
+        <div class="stagger-3"><app-meta-card label="Meta Description" [value]="r.metaDescription" /></div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <app-seo-checklist [items]="r.scoreBreakdown" />
-        <app-og-card [result]="r" />
+        <div class="stagger-4"><app-seo-checklist [items]="r.scoreBreakdown" /></div>
+        <div class="stagger-5"><app-og-card [result]="r" /></div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <app-headings-card title="H1 Headings" [headings]="r.h1" />
-        <app-headings-card title="H2 Headings" [headings]="r.h2" />
+        <div class="stagger-6"><app-headings-card title="H1 Headings" [headings]="r.h1" /></div>
+        <div class="stagger-7"><app-headings-card title="H2 Headings" [headings]="r.h2" /></div>
+      </div>
       </div>
     }
   </main>

@@ -9,7 +9,21 @@
   </div>
   @if (value()) {
     <p class="text-slate-800 text-sm font-medium leading-snug line-clamp-3">{{ value() }}</p>
-    <p class="text-slate-400 text-xs mt-2">{{ value().length }} characters</p>
+    <div class="mt-2 space-y-1">
+      <div class="flex items-center justify-between">
+        <p class="text-xs" [class]="inRange() ? 'text-emerald-600' : 'text-amber-500'">
+          {{ value().length }} chars
+          <span class="text-slate-400 font-normal">(ideal: {{ minChars() }}–{{ maxChars() }})</span>
+        </p>
+      </div>
+      <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+        <div
+          class="h-full rounded-full transition-all duration-500"
+          [class]="inRange() ? 'bg-emerald-400' : 'bg-amber-400'"
+          [style.width.%]="barPercent()"
+        ></div>
+      </div>
+    </div>
   } @else {
     <p class="text-slate-400 text-sm italic">Not found</p>
   }

@@ -2,12 +2,31 @@
   class="bg-white rounded-2xl border shadow-sm p-6 flex flex-col items-center justify-center"
   [class]="borderClass()"
 >
-  <div class="text-6xl font-black" [class]="colorClass()">{{ score() }}</div>
-  <div class="text-slate-400 text-xs mt-1">out of 100</div>
+  <!-- Circular gauge -->
+  <div class="relative w-[120px] h-[120px]">
+    <svg width="120" height="120" class="-rotate-90" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="44" fill="none" stroke="#e2e8f0" stroke-width="8" />
+      <circle
+        cx="60" cy="60" r="44"
+        fill="none"
+        [attr.stroke]="ringColor()"
+        stroke-width="8"
+        stroke-linecap="round"
+        [attr.stroke-dasharray]="CIRCUMFERENCE"
+        [attr.stroke-dashoffset]="ringOffset()"
+        style="transition: stroke-dashoffset 0.6s ease"
+      />
+    </svg>
+    <div class="absolute inset-0 flex flex-col items-center justify-center">
+      <span class="text-3xl font-black leading-none" [class]="colorClass()">{{ displayScore() }}</span>
+      <span class="text-slate-400 text-[10px] mt-0.5">/ 100</span>
+    </div>
+  </div>
+
   <div class="mt-3 px-3 py-1 rounded-full text-xs font-semibold" [class]="badgeClass()">
     {{ label() }}
   </div>
-  <div class="text-slate-400 text-xs mt-2">SEO Score</div>
+  <div class="text-slate-400 text-xs mt-1">SEO Score</div>
 
   @if (delta() !== null) {
     <div

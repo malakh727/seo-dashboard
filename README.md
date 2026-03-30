@@ -1,26 +1,33 @@
 # SEO Analytics Dashboard
 
-A web application that analyzes basic SEO elements of any given URL and presents the results in a simple, user-friendly dashboard.
+A web application that analyzes SEO elements of any given URL and presents the results in a clean, interactive dashboard.
 
 ---
 
-## 🚀 Features
+## Features
 
-- Analyze page title and meta description
-- Extract heading structure (H1, H2)
-- Display structured SEO insights
-- Clean and responsive UI
-- Fast analysis using server-side HTML parsing
+- Analyze page title and meta description with character-count guidance
+- Extract and display heading structure (H1, H2)
+- Open Graph tag analysis (og:title, og:description, og:image preview)
+- Canonical URL detection
+- Image count and missing alt-text reporting
+- Word count analysis
+- SEO scoring system (0–100) with per-criterion breakdown
+- Score delta tracking vs. previous analysis of the same URL
+- Analysis history (up to 10 entries, stored in localStorage)
+- Copy results to clipboard
+- Export results as JSON
+- Clean, responsive UI with loading skeletons
+- Rate limiting and private IP blocking on the backend
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
-- Angular
+- Angular 21
 - Tailwind CSS
-- DaisyUI
 
 ### Backend
 
@@ -31,17 +38,17 @@ A web application that analyzes basic SEO elements of any given URL and presents
 
 ---
 
-## ⚙️ How It Works
+## How It Works
 
 1. User enters a URL in the frontend
 2. Request is sent to the backend API
-3. Backend fetches the page HTML
-4. HTML is parsed to extract SEO-related data
-5. Results are returned and displayed in the dashboard
+3. Backend validates the URL and fetches the page HTML
+4. HTML is parsed with Cheerio to extract SEO-related data
+5. Frontend scores the result (0–100) and displays the full breakdown
 
 ---
 
-## 📦 Installation & Setup
+## Installation & Setup
 
 ### 1. Clone the repository
 
@@ -84,7 +91,7 @@ http://localhost:4200
 
 ---
 
-## 📌 API Endpoint
+## API Endpoint
 
 **POST** `/api/seo/analyze`
 
@@ -100,25 +107,32 @@ http://localhost:4200
 
 ```json
 {
-  "title": "Example Page",
-  "metaDescription": "This is an example description",
-  "h1": ["Main Heading"],
-  "h2": ["Section 1", "Section 2"]
+  "title": "Example Domain",
+  "metaDescription": "This is an example description.",
+  "h1": ["Example Domain"],
+  "h2": ["Section One", "Section Two"],
+  "ogTitle": "Example Domain",
+  "ogDescription": "An example OG description.",
+  "ogImage": "https://example.com/og-image.png",
+  "canonicalUrl": "https://example.com/",
+  "imageCount": 3,
+  "imagesWithoutAlt": 1,
+  "wordCount": 412
 }
 ```
 
 ---
 
-## 🧠 Future Improvements
+## Future Improvements
 
-- SEO scoring system
-- Performance metrics integration
-- Error handling for invalid URLs
-- Save analysis history
+- Performance metrics integration (Core Web Vitals)
+- Save analysis history to a database
 - Authentication and user accounts
+- Shareable analysis report links
+- Competitor comparison mode
 
 ---
 
-## 📄 License
+## License
 
 This project is for educational and portfolio purposes.

@@ -1,3 +1,27 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+
+/* Staggered entrance for result cards */
+.stagger-1  { animation: fade-in 0.4s ease-out both; animation-delay: 0ms; }
+.stagger-2  { animation: fade-in 0.4s ease-out both; animation-delay: 80ms; }
+.stagger-3  { animation: fade-in 0.4s ease-out both; animation-delay: 160ms; }
+.stagger-4  { animation: fade-in 0.4s ease-out both; animation-delay: 240ms; }
+.stagger-5  { animation: fade-in 0.4s ease-out both; animation-delay: 320ms; }
+.stagger-6  { animation: fade-in 0.4s ease-out both; animation-delay: 400ms; }
+.stagger-7  { animation: fade-in 0.4s ease-out both; animation-delay: 480ms; }
+
+/* Checklist item stagger */
+@keyframes check-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.check-item { animation: check-in 0.3s ease-out both; }
