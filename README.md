@@ -1,6 +1,7 @@
 # SEO Analytics Dashboard
 
 A web application that analyzes SEO elements of any given URL and presents the results in a clean, interactive dashboard.
+<img width="1833" height="892" alt="image" src="https://github.com/user-attachments/assets/4a7c3bee-a92a-4ce0-8ca9-acd515b6b5e7" />
 
 ---
 
