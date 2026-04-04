@@ -13,9 +13,12 @@ A web application that analyzes SEO elements of any given URL and presents the r
 - Canonical URL detection
 - Image count and missing alt-text reporting
 - Word count analysis
-- SEO scoring system (0–100) with per-criterion breakdown
+- SEO scoring system (0–100) with per-criterion breakdown, calculated server-side
 - Score delta tracking vs. previous analysis of the same URL
-- Analysis history (up to 10 entries, stored in localStorage)
+- Persistent analysis history stored in MongoDB (unlimited entries)
+- Score trend charts per domain
+- Side-by-side URL comparison
+- Shareable report links (`/report?id=<id>`)
 - Copy results to clipboard
 - Export results as JSON
 - Clean, responsive UI with loading skeletons
@@ -36,6 +39,7 @@ A web application that analyzes SEO elements of any given URL and presents the r
 - Express.js
 - Axios
 - Cheerio
+- MongoDB + Mongoose
 
 ---
 
@@ -45,7 +49,8 @@ A web application that analyzes SEO elements of any given URL and presents the r
 2. Request is sent to the backend API
 3. Backend validates the URL and fetches the page HTML
 4. HTML is parsed with Cheerio to extract SEO-related data
-5. Frontend scores the result (0–100) and displays the full breakdown
+5. Backend calculates the SEO score (0–100) and saves the full analysis to MongoDB
+6. Frontend displays the result and updates the history from the database
 
 ---
 
@@ -60,7 +65,30 @@ cd seo-dashboard
 
 ---
 
-### 2. Setup Backend
+### 2. Start MongoDB
+
+Using Docker (recommended):
+
+```bash
+docker run -d --name mongodb -p 27017:27017 mongo:8
+```
+
+Or use [MongoDB Atlas](https://cloud.mongodb.com) (free tier) and set the connection string in `backend/.env`.
+
+---
+
+### 3. Configure the backend environment
+
+Create `backend/.env`:
+
+```
+MONGO_URI=mongodb://localhost:27017/seo-dashboard
+PORT=3000
+```
+
+---
+
+### 4. Setup Backend
 
 ```bash
 cd backend
@@ -76,7 +104,7 @@ http://localhost:3000
 
 ---
 
-### 3. Setup Frontend
+### 5. Setup Frontend
 
 ```bash
 cd frontend
@@ -92,22 +120,23 @@ http://localhost:4200
 
 ---
 
-## API Endpoint
+## API Endpoints
+
+### Analyze a URL
 
 **POST** `/api/seo/analyze`
 
-### Request Body:
-
+Request body:
 ```json
-{
-  "url": "https://example.com"
-}
+{ "url": "https://example.com" }
 ```
 
-### Response Example:
-
+Response:
 ```json
 {
+  "_id": "64f1a2b3c4d5e6f7a8b9c0d1",
+  "url": "https://example.com",
+  "analyzedAt": "2026-04-04T17:23:51.102Z",
   "title": "Example Domain",
   "metaDescription": "This is an example description.",
   "h1": ["Example Domain"],
@@ -118,19 +147,31 @@ http://localhost:4200
   "canonicalUrl": "https://example.com/",
   "imageCount": 3,
   "imagesWithoutAlt": 1,
-  "wordCount": 412
+  "wordCount": 412,
+  "score": 85,
+  "scoreBreakdown": [
+    { "label": "Page title present", "points": 10, "maxPoints": 10, "passed": true },
+    { "label": "Title length (30–60 chars)", "points": 15, "maxPoints": 15, "passed": true }
+  ]
 }
 ```
+
+### History
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/seo/history` | Get all analyses (sorted by date desc) |
+| `GET` | `/api/seo/history/:id` | Get a single analysis by ID |
+| `DELETE` | `/api/seo/history/:id` | Delete a single analysis |
+| `DELETE` | `/api/seo/history` | Delete all analyses |
 
 ---
 
 ## Future Improvements
 
 - Performance metrics integration (Core Web Vitals)
-- Save analysis history to a database
 - Authentication and user accounts
-- Shareable analysis report links
-- Competitor comparison mode
+- Competitor comparison mode (in progress)
 
 ---
 
