@@ -6,6 +6,9 @@ export interface ScoreItem {
 }
 
 export interface SeoResult {
+  _id?: string;
+  url?: string;
+  analyzedAt?: string;
   title: string;
   metaDescription: string;
   h1: string[];

@@ -29,8 +29,8 @@ export class HistoryPage {
     const field = this.sortField();
     const dir   = this.sortDir();
     list.sort((a, b) => {
-      const va = field === 'date' ? new Date(a.analyzedAt).getTime() : a.result.score;
-      const vb = field === 'date' ? new Date(b.analyzedAt).getTime() : b.result.score;
+      const va = field === 'date' ? new Date(a.analyzedAt).getTime() : a.score;
+      const vb = field === 'date' ? new Date(b.analyzedAt).getTime() : b.score;
       return dir === 'desc' ? vb - va : va - vb;
     });
     return list;
@@ -69,7 +69,7 @@ export class HistoryPage {
     const { SVG_W: W, SVG_H: H, PAD } = this;
     return entries.map((e, i) => {
       const x = PAD + (i / (entries.length - 1)) * (W - PAD * 2);
-      const y = H - PAD - (e.result.score / 100) * (H - PAD * 2);
+      const y = H - PAD - (e.score / 100) * (H - PAD * 2);
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
   }
@@ -78,8 +78,8 @@ export class HistoryPage {
     const { SVG_W: W, SVG_H: H, PAD } = this;
     return entries.map((e, i) => ({
       x:     PAD + (i / (entries.length - 1)) * (W - PAD * 2),
-      y:     H - PAD - (e.result.score / 100) * (H - PAD * 2),
-      score: e.result.score,
+      y:     H - PAD - (e.score / 100) * (H - PAD * 2),
+      score: e.score,
       date:  e.analyzedAt,
     }));
   }
@@ -121,8 +121,8 @@ export class HistoryPage {
     this.router.navigate(['/'], { queryParams: { url } });
   }
 
-  deleteEntry(analyzedAt: string): void {
-    this.historyService.deleteEntry(analyzedAt);
+  deleteEntry(id: string): void {
+    this.historyService.deleteEntry(id);
   }
 
   favicon(url: string): string {

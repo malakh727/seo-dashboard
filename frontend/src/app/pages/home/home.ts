@@ -4,7 +4,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Seo } from '../../services/seo';
 import { HistoryService } from '../../services/history.service';
 import { SeoResult } from '../../models/seo.models';
-import { calculateScore } from '../../utils/seo-score.util';
 import { UrlInput } from '../../components/url-input/url-input';
 import { ScoreCard } from '../../components/score-card/score-card';
 import { MetaCard } from '../../components/meta-card/meta-card';
@@ -15,7 +14,16 @@ import { OgCard } from '../../components/og-card/og-card';
 
 @Component({
   selector: 'app-home-page',
-  imports: [UrlInput, ScoreCard, MetaCard, SeoChecklist, HeadingsCard, LoadingSkeleton, OgCard, DatePipe, RouterLink],
+  imports: [
+    UrlInput,
+    ScoreCard,
+    MetaCard,
+    SeoChecklist,
+    HeadingsCard,
+    LoadingSkeleton,
+    OgCard,
+    RouterLink,
+  ],
   templateUrl: './home.html',
 })
 export class HomePage {
@@ -33,7 +41,7 @@ export class HomePage {
   linkCopied = signal(false);
 
   constructor() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       if (params['url']) {
         this.prefillUrl.set(params['url']);
         this.onAnalyze(params['url']);
@@ -53,9 +61,9 @@ export class HomePage {
 
   topIssues = computed(() =>
     (this.result()?.scoreBreakdown ?? [])
-      .filter(i => !i.passed)
+      .filter((i) => !i.passed)
       .sort((a, b) => b.maxPoints - a.maxPoints)
-      .slice(0, 3)
+      .slice(0, 3),
   );
 
   projectedScore = computed(() => {
@@ -70,7 +78,9 @@ export class HomePage {
     try {
       const hostname = new URL(url.startsWith('http') ? url : 'https://' + url).hostname;
       return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
-    } catch { return ''; }
+    } catch {
+      return '';
+    }
   });
 
   interpretationText = computed(() => {
@@ -82,7 +92,7 @@ export class HomePage {
     const projected = this.projectedScore();
     if (issues.length === 1)
       return `Fixing "${issues[0].label}" (+${issues[0].maxPoints} pts) would bring your score to ${projected}.`;
-    const list = issues.map(i => `"${i.label}" (+${i.maxPoints} pts)`).join(', ');
+    const list = issues.map((i) => `"${i.label}" (+${i.maxPoints} pts)`).join(', ');
     return `Top issues: ${list}. Fixing these could reach ${projected}+.`;
   });
 
@@ -99,10 +109,8 @@ export class HomePage {
 
     this.seoService.analyze(url).subscribe({
       next: (data: any) => {
-        const { score, scoreBreakdown } = this.calculateScore(data);
-        const fullResult = { ...data, score, scoreBreakdown };
-        this.result.set(fullResult);
-        this.historyService.save(url, fullResult);
+        this.result.set(data);
+        this.historyService.loadAll();
         this.loading.set(false);
       },
       error: (err: any) => {
@@ -154,15 +162,11 @@ export class HomePage {
 
   shareReport(): void {
     const r = this.result();
-    if (!r) return;
-    const payload = JSON.stringify({ url: this.lastUrl(), ...r });
-    const encoded = btoa(unescape(encodeURIComponent(payload)));
-    const url = `${window.location.origin}/report?data=${encoded}`;
+    if (!r?._id) return;
+    const url = `${window.location.origin}/report?id=${r._id}`;
     navigator.clipboard.writeText(url).then(() => {
       this.linkCopied.set(true);
       setTimeout(() => this.linkCopied.set(false), 2000);
     });
   }
-
-  private calculateScore = calculateScore;
 }

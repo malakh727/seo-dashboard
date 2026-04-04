@@ -1,12 +1,14 @@
 import { Component, signal, inject, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { SeoResult } from '../../models/seo.models';
 import { ScoreCard } from '../../components/score-card/score-card';
 import { MetaCard } from '../../components/meta-card/meta-card';
 import { SeoChecklist } from '../../components/seo-checklist/seo-checklist';
 import { OgCard } from '../../components/og-card/og-card';
 import { HeadingsCard } from '../../components/headings-card/headings-card';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-report-page',
@@ -15,25 +17,33 @@ import { HeadingsCard } from '../../components/headings-card/headings-card';
 })
 export class ReportPage {
   private route = inject(ActivatedRoute);
+  private http  = inject(HttpClient);
 
-  result  = signal<SeoResult | null>(null);
-  siteUrl = signal('');
+  result      = signal<SeoResult | null>(null);
+  siteUrl     = signal('');
   generatedAt = signal('');
-  error   = signal('');
+  loading     = signal(false);
+  error       = signal('');
 
   constructor() {
     this.route.queryParams.subscribe(params => {
-      if (!params['data']) { this.error.set('No report data found in this URL.'); return; }
-      try {
-        const json   = decodeURIComponent(escape(atob(params['data'])));
-        const parsed = JSON.parse(json);
-        const { url, ...rest } = parsed;
-        this.siteUrl.set(url ?? '');
-        this.result.set(rest as SeoResult);
-        this.generatedAt.set(new Date().toISOString());
-      } catch {
-        this.error.set('Could not decode report data. The link may be invalid or expired.');
-      }
+      const id = params['id'];
+      if (!id) { this.error.set('No report ID found in this URL.'); return; }
+
+      this.loading.set(true);
+      this.http.get<any>(`${environment.apiUrl}/api/seo/history/${id}`).subscribe({
+        next: (data) => {
+          const { url, analyzedAt, ...rest } = data;
+          this.siteUrl.set(url ?? '');
+          this.generatedAt.set(analyzedAt ?? new Date().toISOString());
+          this.result.set(rest as SeoResult);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Could not load report. The link may be invalid or expired.');
+          this.loading.set(false);
+        },
+      });
     });
   }
 

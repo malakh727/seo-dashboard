@@ -1,70 +1,55 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { SeoResult } from '../models/seo.models';
+import { environment } from '../../environments/environment';
 
-export interface HistoryEntry {
+export interface HistoryEntry extends SeoResult {
+  _id: string;
   url: string;
   analyzedAt: string;
-  result: SeoResult;
 }
-
-const STORAGE_KEY = 'seo_history';
-const FULL_HISTORY_KEY = 'seo_history_full';
-const MAX_ENTRIES = 10;
-const MAX_FULL_ENTRIES = 50;
 
 @Injectable({ providedIn: 'root' })
 export class HistoryService {
-  /** Deduplicated (latest per URL) — used by the home page quick-panel */
-  entries = signal<HistoryEntry[]>(this.load());
+  private http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/api/seo`;
 
-  /** All runs including repeats — used by the history page & trend chart */
-  fullHistory = signal<HistoryEntry[]>(this.loadFull());
+  fullHistory = signal<HistoryEntry[]>([]);
+  entries     = signal<HistoryEntry[]>([]); // latest per URL, for home page
 
-  save(url: string, result: SeoResult): void {
-    const entry: HistoryEntry = { url, analyzedAt: new Date().toISOString(), result };
+  constructor() {
+    this.loadAll();
+  }
 
-    // Deduplicated list: keep latest per URL
-    const updated = [entry, ...this.entries().filter((e) => e.url !== url)].slice(0, MAX_ENTRIES);
-    this.entries.set(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-
-    // Full list: keep all runs for trend tracking
-    const full = [entry, ...this.fullHistory()].slice(0, MAX_FULL_ENTRIES);
-    this.fullHistory.set(full);
-    localStorage.setItem(FULL_HISTORY_KEY, JSON.stringify(full));
+  loadAll(): void {
+    this.http.get<HistoryEntry[]>(`${this.apiUrl}/history`).subscribe(data => {
+      this.fullHistory.set(data);
+      const seen = new Set<string>();
+      const deduped = data.filter(e => {
+        if (seen.has(e.url)) return false;
+        seen.add(e.url);
+        return true;
+      });
+      this.entries.set(deduped);
+    });
   }
 
   getPreviousScore(url: string): number | null {
-    const match = this.entries().find((e) => e.url === url);
-    return match ? match.result.score : null;
+    const match = this.entries().find(e => e.url === url);
+    return match ? match.score : null;
   }
 
-  deleteEntry(analyzedAt: string): void {
-    const full = this.fullHistory().filter((e) => e.analyzedAt !== analyzedAt);
-    this.fullHistory.set(full);
-    localStorage.setItem(FULL_HISTORY_KEY, JSON.stringify(full));
-
-    const deduped = this.entries().filter((e) => e.analyzedAt !== analyzedAt);
-    this.entries.set(deduped);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped));
+  deleteEntry(id: string): void {
+    this.http.delete(`${this.apiUrl}/history/${id}`).subscribe(() => {
+      this.fullHistory.update(list => list.filter(e => e._id !== id));
+      this.entries.update(list => list.filter(e => e._id !== id));
+    });
   }
 
   clear(): void {
-    this.entries.set([]);
-    this.fullHistory.set([]);
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(FULL_HISTORY_KEY);
-  }
-
-  private load(): HistoryEntry[] {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') ?? [];
-    } catch { return []; }
-  }
-
-  private loadFull(): HistoryEntry[] {
-    try {
-      return JSON.parse(localStorage.getItem(FULL_HISTORY_KEY) ?? 'null') ?? [];
-    } catch { return []; }
+    this.http.delete(`${this.apiUrl}/history`).subscribe(() => {
+      this.fullHistory.set([]);
+      this.entries.set([]);
+    });
   }
 }

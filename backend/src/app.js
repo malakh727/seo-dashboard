@@ -1,7 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const connectDB = require('./db');
 const seoRoutes = require('./routes/seoRoutes');
+
+connectDB();
 
 const app = express();
 
@@ -21,6 +25,6 @@ app.use('/api/seo', seoRoutes);
 module.exports = app;
 
 if (require.main === module) {
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }

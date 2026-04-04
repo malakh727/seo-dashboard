@@ -56,7 +56,7 @@
 
       <!-- Rows -->
       <ul class="divide-y divide-slate-50">
-        @for (entry of sortedEntries(); track entry.analyzedAt) {
+        @for (entry of sortedEntries(); track entry._id) {
           <li class="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors group">
 
             <!-- Favicon + URL -->
@@ -71,8 +71,8 @@
             <!-- Score badge -->
             <span
               class="shrink-0 text-sm font-bold px-2.5 py-0.5 rounded-full tabular-nums"
-              [class]="scoreBadge(entry.result.score)"
-            >{{ entry.result.score }}</span>
+              [class]="scoreBadge(entry.score)"
+            >{{ entry.score }}</span>
 
             <!-- Date -->
             <span class="shrink-0 text-xs text-slate-400 hidden sm:block w-28 text-right">
@@ -91,7 +91,7 @@
                 </svg>
               </button>
               <button
-                (click)="deleteEntry(entry.analyzedAt)"
+                (click)="deleteEntry(entry._id)"
                 title="Delete"
                 class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
               >

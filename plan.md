@@ -153,14 +153,91 @@
 
 ---
 
-## Phase 8 — Production & Portfolio Polish
+## Phase 8 — MongoDB Integration
 
-> (From original plan — deferred until features are complete)
+> Goal: Replace localStorage-based history with a persistent MongoDB database. Enables cross-device history, unlimited entries, real shareable report links, and lays the groundwork for future auth/accounts.
 
-- [ ] Docker Compose setup (`docker-compose.yml`, `Dockerfile` × 2)
-- [ ] Swagger/OpenAPI docs at `/api/docs`
-- [ ] Accessibility pass (aria-labels, keyboard nav, color-independent indicators)
-- [ ] Unit tests — fill in `app.spec.ts`, `seo.spec.ts`, backend Jest tests
+### Backend
+
+- [x] **Install dependencies**
+  - `cd backend && npm install mongoose dotenv`
+
+- [x] **Create `backend/.env`**
+  - `MONGO_URI=mongodb://localhost:27017/seo-dashboard`
+  - `PORT=3000`
+
+- [x] **Create DB connection helper**
+  - New file: `backend/src/db.js`
+  - Calls `mongoose.connect(process.env.MONGO_URI)` and logs on success
+
+- [x] **Create Mongoose model**
+  - New file: `backend/src/models/analysis.model.js`
+  - Fields: `url`, `analyzedAt` (Date), all SEO fields, `score` (Number), `scoreBreakdown` (array)
+
+- [x] **Move score calculation to backend**
+  - New file: `backend/src/utils/seoScore.js`
+  - Port the 7-criteria logic from `frontend/src/app/utils/seo-score.util.ts`
+
+- [x] **Update `seoController.js`** to calculate score + save to MongoDB before responding
+  - File: `backend/src/controllers/seoController.js`
+  - Return full saved document including `_id`
+
+- [x] **Create `historyController.js`**
+  - New file: `backend/src/controllers/historyController.js`
+  - `getAll` → `Analysis.find().sort({ analyzedAt: -1 })`
+  - `getById` → `Analysis.findById(req.params.id)`
+  - `deleteOne` → `Analysis.findByIdAndDelete(req.params.id)`
+  - `deleteAll` → `Analysis.deleteMany({})`
+
+- [x] **Update `seoRoutes.js`** to add history CRUD routes
+  - File: `backend/src/routes/seoRoutes.js`
+  - `GET    /api/seo/history`
+  - `GET    /api/seo/history/:id`
+  - `DELETE /api/seo/history/:id`
+  - `DELETE /api/seo/history`
+
+- [x] **Update `app.js`** to load dotenv and call `connectDB()` on startup
+  - File: `backend/src/app.js`
+
+### Frontend
+
+- [x] **Rewrite `history.service.ts`** — remove all localStorage, replace with HTTP calls
+  - File: `frontend/src/app/services/history.service.ts`
+  - `getAll()` → `GET /api/seo/history`
+  - `deleteEntry(id)` → `DELETE /api/seo/history/:id`
+  - `clear()` → `DELETE /api/seo/history`
+  - `save()` removed (backend saves on analyze)
+
+- [x] **Update History page** to use service HTTP methods and Mongo `_id` for deletes
+  - File: `frontend/src/app/pages/history/history.ts`
+
+- [x] **Update Report page** to use `?id=<mongo_id>` instead of `?data=<base64>`
+  - File: `frontend/src/app/pages/report/report.ts`
+  - Fetch from `GET /api/seo/history/:id`
+
+- [x] **Update Share Report button** on home page to encode `_id` in link
+  - File: `frontend/src/app/pages/home/home.ts`
+
+---
+
+## Phase 9 — Production & Portfolio Polish
+
+> Goal: Finalize the app for deployment. **Requires Phase 8 (MongoDB) to be complete first** — Docker setup, Swagger docs, and tests all depend on the database being in place.
+
+- [ ] **Docker Compose setup** — `docker-compose.yml` + `Dockerfile` × 3 (frontend, backend, MongoDB)
+  - Backend `Dockerfile` must include `MONGO_URI` env var wiring
+  - Add a `mongo` service with a named volume for data persistence
+  - Backend service must `depends_on: mongo`
+
+- [ ] **Swagger/OpenAPI docs** at `/api/docs`
+  - Document all endpoints including the 4 new history routes from Phase 8
+
+- [ ] **Accessibility pass** — aria-labels, keyboard nav, color-independent indicators
+
+- [ ] **Unit tests**
+  - Frontend: `app.spec.ts`, `seo.spec.ts`
+  - Backend: Jest tests for `seoController`, `historyController`, `seoScore.js`
+  - Integration: test history CRUD against a real test MongoDB instance
 
 ---
 
@@ -175,4 +252,5 @@
 | 5 | /compare page | Medium |
 | 6 | /report page | Medium |
 | 7 | /tips page | Low |
-| 8 | Production polish | High |
+| 8 | MongoDB integration | High |
+| 9 | Production & portfolio polish | High |

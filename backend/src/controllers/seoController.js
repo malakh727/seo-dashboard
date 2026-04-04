@@ -1,4 +1,6 @@
 const { fetchSEOData } = require('../services/seoService');
+const { calculateScore } = require('../utils/seoScore');
+const Analysis = require('../models/analysis.model');
 
 const PRIVATE_IP_RE = /^(localhost|127\.|0\.0\.0\.0|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/i;
 
@@ -37,7 +39,10 @@ const analyzeSEO = async (req, res) => {
     }
 
     const data = await fetchSEOData(url);
-    res.json(data);
+    const { score, scoreBreakdown } = calculateScore(data);
+
+    const analysis = await Analysis.create({ url, ...data, score, scoreBreakdown });
+    res.json(analysis);
   } catch (error) {
     if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
       return res.status(400).json({ error: 'Could not reach the URL. Please check it is correct and accessible.' });
